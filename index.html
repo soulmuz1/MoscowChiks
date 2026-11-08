@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Московские чиксы</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <div class="logo">МОСКОВСКИЕ ЧИКСЫ.</div>
+
+    <nav>
+        <a href="#home">Главная</a>
+        <a href="#memes">Мемы</a>
+        <a href="#quotes">Цитаты</a>
+        <a href="#stories">Истории</a>
+        <button id="secretBtn" class="nav-secret">Секретное</button>
+    </nav>
+</header>
+
+<main>
+
+    <section class="hero" id="home">
+        <p class="subtitle">САМЫЙ ЦАРСКИЙ ПРОЕКТ</p>
+
+        <h1>МОСКОВСКИЕ
+ЧИКСЫ</h1>
+
+        <p class="description">
+            Здесь собраны события, которые сделали легенды
+        </p>
+
+        <a class="main-button" href="#memes">
+            ПОСМОТРЕТЬ МЕМЫ ↓
+        </a>
+    </section>
+
+    <section class="section" id="memes">
+
+        <p class="section-number">01 / ХУЙНЯ</p>
+
+        <h2>МЕМЫ НАШЕЙ КОМПАНИИ</h2>
+
+        <button id="showForm" class="add-button" type="button">
+            + ДОБАВИТЬ МЕМ
+        </button>
+
+        <form id="memeForm" class="meme-form" hidden>
+
+            <h3>Создать новый мем</h3>
+
+            <input
+                id="memeTitle"
+                type="text"
+                placeholder="Название мема"
+                maxlength="70"
+                required
+            >
+
+            <textarea
+                id="memeText"
+                placeholder="Описание мема..."
+                maxlength="300"
+                required
+            ></textarea>
+
+            <label for="memeImage">
+                ВЫБРАТЬ КАРТИНКУ С КОМПЬЮТЕРА
+            </label>
+
+            <input
+                id="memeImage"
+                type="file"
+                accept="image/*"
+            >
+
+            <img id="imagePreview" hidden alt="Предпросмотр">
+
+            <button class="add-button" type="submit">
+                СОХРАНИТЬ МЕМ
+            </button>
+
+            <button class="cancel-button" id="cancelForm" type="button">
+                ОТМЕНИТЬ
+            </button>
+
+        </form>
+
+        <div class="cards" id="memeContainer"></div>
+
+    </section>
+
+    <section class="section quotes" id="quotes">
+
+        <p class="section-number">02 / ЦИТАТЫ</p>
+
+        <h2>СЛОВА, КОТОРЫЕ ВОШЛИ В ИСТОРИЮ</h2>
+
+        <blockquote id="randomQuote">
+            «Лобок»
+        </blockquote>
+
+        <p>— Архив легендарных высказываний</p>
+
+        <button class="add-button" id="quoteButton" type="button">
+            НОВАЯ ЦИТАТА ↻
+        </button>
+
+    </section>
+
+    <section class="section" id="stories">
+
+        <p class="section-number">03 / АРХИВ</p>
+
+        <h2>ИСТОРИИ НАШЕЙ КОМПАНИИ</h2>
+
+        <p class="description">
+            Некоторые события невозможно описать флексом.
+            Поэтому мы просто сохраняем их здесь.
+        </p>
+
+        <button id="showStoryForm" class="add-button" type="button">
+            + ДОБАВИТЬ ИСТОРИЮ
+        </button>
+
+        <form id="storyForm" class="story-form" hidden>
+            <h3>Добавить новую хуйню</h3>
+            <input id="storyTitle" type="text" placeholder="Название истории" maxlength="90" required>
+            <textarea id="storyText" placeholder="Ну давай, рискни что то сказать" maxlength="2000" required></textarea>
+            <button class="add-button" type="submit">СОХРАНИТЬ ИСТОРИЮ</button>
+            <button class="cancel-button" id="cancelStoryForm" type="button">ОТМЕНИТЬ</button>
+        </form>
+
+        <div class="stories-list" id="storiesContainer"></div>
+
+    </section>
+
+    <section class="section secret-section" id="secretSection" hidden>
+
+        <div class="secret-stars" aria-hidden="true">✦　✧　✦　✧　✦</div>
+        <p class="section-number">04 / TOP SECRET</p>
+
+        <h2 class="secret-title">ЦАРЬ ПРОСНУЛСЯ <span>♛</span></h2>
+        <p class="secret-subtitle">ПОСВЯЩЁННЫМ ВХОД РАЗРЕШЁН</p>
+
+        <div class="secret-dance-stage">
+            <img
+                class="dancing-king"
+                src="ginger-king.png"
+                alt="Танцующий пиксельный рыжий царь в короне"
+            >
+            <h3 class="king-caption">ЦАРЬ ТАНЦУЕТ!</h3>
+            <p>Танец посвящён всем посвящённым 👑</p>
+            <div class="secret-stamp">ДОСТУП ОТКРЫТ</div>
+        </div>
+
+        <p class="secret-footer">ТАЙНАЯ КОМНАТА • МОСКОВСКИЕ ЧИКСЫ • 2026</p>
+
+    </section>
+
+</main>
+
+<footer>
+    <p>МОСКОВСКИЕ ЧИКСЫ © 2026</p>
+    <p>Сделано АЙАЙ</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
+
+
+
+
+

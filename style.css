@@ -1,0 +1,626 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: #080808;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+/* ШАПКА */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 7%;
+    border-bottom: 1px solid #292929;
+    position: sticky;
+    top: 0;
+    background: rgba(8, 8, 8, 0.96);
+    z-index: 100;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+nav a,
+.nav-secret {
+    color: #aaa;
+    text-decoration: none;
+    font-size: 13px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+nav a:hover,
+.nav-secret:hover {
+    color: white;
+}
+
+/* ГЛАВНАЯ */
+
+.hero {
+    min-height: 650px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.subtitle,
+.section-number {
+    color: #777;
+    letter-spacing: 4px;
+    font-size: 11px;
+}
+
+.hero h1 {
+    font-size: clamp(55px, 11vw, 130px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -5px;
+    margin: 30px 0;
+}
+
+.description {
+    color: #999;
+    line-height: 1.8;
+    max-width: 500px;
+}
+
+.main-button,
+.add-button {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 16px 25px;
+    border: 1px solid white;
+    background: white;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.main-button:hover,
+.add-button:hover {
+    background: transparent;
+    color: white;
+    transform: translateY(-3px);
+}
+
+/* СЕКЦИИ */
+
+.section {
+    padding: 100px 7%;
+    border-top: 1px solid #292929;
+}
+
+.section h2 {
+    font-size: clamp(28px, 5vw, 55px);
+    margin: 25px 0 35px;
+}
+
+/* ФОРМА */
+
+.meme-form {
+    margin-top: 30px;
+    padding: 30px;
+    border: 1px solid #444;
+    max-width: 550px;
+    animation: appear 0.4s ease;
+}
+
+.meme-form h3 {
+    margin-bottom: 20px;
+}
+
+.meme-form input:not([type="file"]),
+.meme-form textarea {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0;
+    background: #151515;
+    color: white;
+    border: 1px solid #444;
+    font-family: Arial, sans-serif;
+    outline: none;
+}
+
+.meme-form input:focus,
+.meme-form textarea:focus {
+    border-color: white;
+}
+
+.meme-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.meme-form label {
+    display: block;
+    color: #aaa;
+    font-size: 12px;
+    margin: 20px 0 10px;
+}
+
+.meme-form input[type="file"] {
+    display: block;
+    width: 100%;
+    color: white;
+}
+
+#imagePreview {
+    display: block;
+    max-width: 100%;
+    max-height: 250px;
+    margin-top: 20px;
+    object-fit: contain;
+}
+
+.cancel-button {
+    margin-top: 15px;
+    padding: 14px 20px;
+    background: transparent;
+    color: white;
+    border: 1px solid #555;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background: #222;
+}
+
+/* КАРТОЧКИ */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.card {
+    border: 1px solid #333;
+    padding: 25px;
+    min-width: 0;
+    transition: 0.3s;
+    animation: appear 0.5s ease;
+    overflow-wrap: anywhere;
+}
+
+.card:hover {
+    background: #171717;
+    transform: translateY(-7px);
+}
+
+.card span {
+    color: #777;
+    font-size: 12px;
+}
+
+.card h3 {
+    margin: 25px 0 15px;
+    font-size: 22px;
+}
+
+.card p {
+    color: #999;
+    line-height: 1.6;
+}
+
+.card img {
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+    margin-top: 20px;
+    border: 1px solid #333;
+}
+
+.delete-button {
+    margin-top: 20px;
+    background: transparent;
+    color: #aaa;
+    border: 1px solid #555;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.delete-button:hover {
+    background: white;
+    color: black;
+}
+
+/* ЦИТАТЫ */
+
+.quotes {
+    text-align: center;
+}
+
+blockquote {
+    font-size:
+
+
+clamp(25px, 5vw, 45px);
+    font-weight: bold;
+    margin: 60px 0 25px;
+}
+
+.quotes p {
+    color: #777;
+}
+
+/* СЕКРЕТНАЯ КОМНАТА */
+
+.secret-card {
+    border: 1px dashed #777;
+    padding: 35px;
+    margin-top: 30px;
+}
+
+.secret-card p {
+    color: #aaa;
+    margin-top: 15px;
+}
+
+/* ПОДВАЛ */
+
+footer {
+    border-top: 1px solid #292929;
+    padding: 35px 7%;
+    display: flex;
+    justify-content: space-between;
+    color: #777;
+    font-size: 12px;
+}
+
+/* АНИМАЦИИ */
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* ТЕЛЕФОНЫ */
+
+@media (max-width: 700px) {
+    header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    nav {
+        justify-content: center;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        letter-spacing: -3px;
+    }
+
+    footer {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* ИСТОРИИ */
+
+.story-form {
+    margin-top: 30px;
+    padding: 30px;
+    border: 1px solid #444;
+    max-width: 650px;
+    animation: appear 0.4s ease;
+}
+
+.story-form h3 { margin-bottom: 20px; }
+
+.story-form input,
+.story-form textarea {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0;
+    background: #151515;
+    color: white;
+    border: 1px solid #444;
+    font-family: Arial, sans-serif;
+    outline: none;
+}
+
+.story-form input:focus,
+.story-form textarea:focus { border-color: white; }
+
+.story-form textarea {
+    min-height: 160px;
+    resize: vertical;
+}
+
+.stories-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.story-card {
+    padding: 28px;
+    border: 1px solid #333;
+    animation: appear 0.5s ease;
+    overflow-wrap: anywhere;
+    transition: 0.3s;
+}
+
+.story-card:hover {
+    background: #171717;
+    transform: translateY(-5px);
+}
+
+.story-number {
+    color: #777;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+.story-card h3 {
+    margin: 22px 0 14px;
+    font-size: 23px;
+}
+
+.story-card p {
+    color: #aaa;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+.empty-stories {
+    color: #777;
+    margin-top: 25px;
+}
+
+@media (max-width: 700px) {
+    .stories-list { grid-template-columns: 1fr; }
+}
+
+
+/* СЕКРЕТНАЯ КОМНАТА — АНИМАЦИЯ И ОФОРМЛЕНИЕ */
+
+.secret-section {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 50% 35%, #242424 0%, #101010 48%, #080808 78%);
+    border-top: 1px solid #777;
+    text-align: center;
+}
+
+.secret-section.secret-open {
+    animation: secretRoomReveal 1.15s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes secretRoomReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(35px) scale(.96);
+        filter: blur(8px);
+    }
+    70% {
+        opacity: 1;
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+.secret-stars {
+    color: #aaa;
+    letter-spacing: 12px;
+    font-size: 22px;
+    margin-bottom: 28px;
+    animation: starsGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes starsGlow {
+    from { opacity: .35; transform: translateY(0); }
+    to { opacity: 1; transform: translateY(-5px); }
+}
+
+.secret-title {
+    margin: 24px 0 12px !important;
+    letter-spacing: clamp(2px, 1vw, 8px);
+    text-shadow: 0 0 22px rgba(255,255,255,.22);
+    animation: kingTitle 1.1s .2s ease both;
+}
+
+.secret-title span {
+    display: inline-block;
+    animation: crownTurn 2.5s .8s ease-in-out infinite;
+}
+
+@keyframes kingTitle {
+    0% { opacity: 0; transform: scale(.65); }
+    70% { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes crownTurn {
+    0%, 100% { transform: rotate(0) translateY(0); }
+    50% { transform: rotate(12deg) translateY(-7px); }
+}
+
+.secret-subtitle {
+    color: #aaa;
+    letter-spacing: 4px;
+    font-size: 11px;
+    animation: secretFade 1.2s .55s both;
+}
+
+.secret-card {
+    position: relative;
+    max-width: 720px;
+    margin: 45px auto 0;
+    padding: 45px 30px;
+    border: 1px solid #777;
+    background: rgba(0,0,0,.42);
+    box-shadow: 0 0 35px rgba(255,255,255,.06);
+    animation: secretFade 1s .75s both;
+}
+
+.secret-crown {
+    font-size: 48px;
+    margin-bottom: 15px;
+    animation: crownFloat 3s ease-in-out infinite;
+}
+
+@keyframes crownFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
+}
+
+.secret-card h3 {
+    letter-spacing: 2px;
+    font-size: clamp(18px, 3vw, 27px);
+}
+
+.secret-card p {
+    color: #aaa;
+    line-height: 1.8;
+    margin-top: 15px;
+}
+
+.secret-stamp {
+    display: inline-block;
+    margin-top: 28px;
+    padding: 10px 18px;
+    border: 1px solid #aaa;
+    color: white;
+    font-size: 10px;
+    letter-spacing: 3px;
+    transform: rotate(-3deg);
+}
+
+.secret-footer {
+    margin-top: 35px;
+    color: #666;
+    font-size: 10px;
+    letter-spacing: 3px;
+    animation: secretFade 1.2s 1s both;
+}
+
+@keyframes secretFade {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .secret-section.secret-open,
+    .secret-stars,
+    .secret-title,
+    .secret-title span,
+    .secret-card,
+    .secret-crown,
+    .secret-footer {
+        animation: none !important;
+    }
+}
+
+
+/* ТАНЦУЮЩИЙ ПИКСЕЛЬНЫЙ РЫЖИЙ ЦАРЬ */
+.secret-dance-stage {
+    position: relative;
+    max-width: 720px;
+    margin: 45px auto 0;
+    padding: 28px 20px 35px;
+    border: 1px solid #777;
+    background: rgba(0, 0, 0, .42);
+    box-shadow: 0 0 35px rgba(255,255,255,.06);
+    animation: secretFade 1s .75s both;
+}
+
+.dancing-king {
+    display: block;
+    width: min(260px, 70%);
+    height: auto;
+    margin: 0 auto;
+    image-rendering: pixelated;
+    transform-origin: 50% 85%;
+    animation: gingerKingDance .95s steps(1, end) infinite;
+    filter: drop-shadow(0 12px 12px rgba(0,0,0,.5));
+    will-change: transform;
+}
+
+/* Более заметный танец: прыжки, шаги в стороны и повороты */
+@keyframes gingerKingDance {
+    0%   { transform: translate(0, 0) rotate(-9deg) scale(1, 1); }
+    12%  { transform: translate(-18px, -22px) rotate(12deg) scale(1.04, .96); }
+    24%  { transform: translate(20px, 0) rotate(-14deg) scale(.96, 1.05); }
+    36%  { transform: translate(15px, -30px) rotate(15deg) scale(1.05, .95); }
+    48%  { transform: translate(-20px, 0) rotate(-12deg) scale(.95, 1.06); }
+    60%  { transform: translate(0, -38px) rotate(5deg) scale(1.08, .92); }
+    72%  { transform: translate(22px, -8px) rotate(18deg) scale(.98, 1.02); }
+    84%  { transform: translate(-14px, -24px) rotate(-17deg) scale(1.03, .97); }
+    100% { transform: translate(0, 0) rotate(-9deg) scale(1, 1); }
+}
+
+.king-caption {
+    margin: 12px 0 8px;
+    letter-spacing: 3px;
+    animation: kingCaptionPulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes kingCaptionPulse {
+    from { opacity: .65; transform: scale(.98); }
+    to { opacity: 1; transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dancing-king,
+    .king-caption {
+        animation: none !important;
+    }
+}
