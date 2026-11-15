@@ -1,4 +1,11 @@
+
 // МОСКОВСКИЕ ЧИКСЫ — JAVASCRIPT
+// Публичные публикации загружаются из Google Sheets.
+// Новые публикации отправляются на сервер со статусом pending.
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyJGFx8-2klhGYAF9zT4nMjqHrZT-iqIQUA-0N_FKWN2a7G6IXNpkCmL_TnJNB-Td7KLg/exec";
+const TURNSTILE_SITE_KEY = "0x4AAAAAAF6EQ6xxCHPKZtYz";
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 const container = document.getElementById("memeContainer");
 const form = document.getElementById("memeForm");
@@ -8,24 +15,6 @@ const imagePreview = document.getElementById("imagePreview");
 const storiesContainer = document.getElementById("storiesContainer");
 const storyForm = document.getElementById("storyForm");
 const showStoryForm = document.getElementById("showStoryForm");
-
-const defaultMemes = [
-    {
-        title: "Какой хороший день",
-        text: "Чтоб пойти на колобка",
-        image: ""
-    },
-    {
-        title: "Я кстати брейкдансом занимался",
-        text: "Опа",
-        image: ""
-    },
-    {
-        title: "Знаете чо мы забыли",
-        text: "Бонди...",
-        image: ""
-    }
-];
 
 const quotes = [
     "Я гей",
@@ -39,73 +28,67 @@ const quotes = [
     "Царь проснулся"
 ];
 
-// ЗАГРУЗКА МЕМОВ
+let memeTurnstileId = null;
+let storyTurnstileId = null;
+let memeTurnstileToken = "";
+let storyTurnstileToken = "";
 
-function loadMemes() {
-    try {
-        const saved = localStorage.getItem("moscowMemes");
+// ---------- СООБЩЕНИЯ ФОРМ ----------
 
-        if (saved === null) {
-            return [...defaultMemes];
+function setStatus(id, message, isError = false) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    element.textContent = message;
+    element.classList.toggle("form-error", isError);
+}
+
+// ---------- ЗАГРУЗКА JSONP ----------
+
+let jsonpCounter = 0;
+
+function loadApproved(type) {
+    return new Promise((resolve, reject) => {
+        const callbackName = "moscowChiksCallback" + (++jsonpCounter);
+        const script = document.createElement("script");
+
+        const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error("Сервер не ответил вовремя"));
+        }, 15000);
+
+        function cleanup() {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            script.remove();
         }
 
-        const parsed = JSON.parse(saved);
+        window[callbackName] = (result) => {
+            cleanup();
 
-        return Array.isArray(parsed) ? parsed : [...defaultMemes];
+            if (!result || result.success !== true || !Array.isArray(result.data)) {
+                reject(new Error(result?.error || "Не удалось загрузить публикации"));
+                return;
+            }
 
-    } catch (error) {
-        console.error("Ошибка загрузки:", error);
-        return [...defaultMemes];
-    }
+            resolve(result.data);
+        };
+
+        script.onerror = () => {
+            cleanup();
+            reject(new Error("Не удалось подключиться к серверу"));
+        };
+
+        script.src =
+            API_URL +
+            "?type=" + encodeURIComponent(type) +
+            "&callback=" + encodeURIComponent(callbackName) +
+            "&_=" + Date.now();
+
+        document.head.appendChild(script);
+    });
 }
 
-let memes = loadMemes();
-
-// СОХРАНЕНИЕ
-
-function saveMemes() {
-    try {
-        localStorage.setItem(
-            "moscowMemes",
-            JSON.stringify(memes)
-        );
-
-        return true;
-
-    } catch (error) {
-        alert("Не удалось сохранить мем. Возможно, закончилось место.");
-        console.error(error);
-        return false;
-    }
-}
-
-
-// ИСТОРИИ: ЗАГРУЗКА, СОХРАНЕНИЕ И ОТОБРАЖЕНИЕ
-
-function loadStories() {
-    try {
-        const saved = localStorage.getItem("moscowStories");
-        if (saved === null) return [];
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-        console.error("Ошибка загрузки историй:", error);
-        return [];
-    }
-}
-
-let stories = loadStories();
-
-function saveStories() {
-    try {
-        localStorage.setItem("moscowStories", JSON.stringify(stories));
-        return true;
-    } catch (error) {
-        alert("Не удалось сохранить историю. Возможно, закончилось место в браузере.");
-        console.error("Ошибка сохранения истории:", error);
-        return false;
-    }
-}
+// ---------- ОТОБРАЖЕНИЕ ИСТОРИЙ ----------
 
 function renderStories() {
     storiesContainer.innerHTML = "";
@@ -113,7 +96,7 @@ function renderStories() {
     if (stories.length === 0) {
         const emptyMessage = document.createElement("p");
         emptyMessage.className = "empty-stories";
-        emptyMessage.textContent = "Пока историй нет. Добавьте первую легенду!";
+        emptyMessage.textContent = "Пока одобренных историй нет. Добавьте первую легенду!";
         storiesContainer.appendChild(emptyMessage);
         return;
     }
@@ -127,135 +110,278 @@ function renderStories() {
         number.textContent = "📖 ИСТОРИЯ № " + String(index + 1).padStart(3, "0");
 
         const title = document.createElement("h3");
-        title.textContent = story.title;
+        title.textContent = story.title || "Без названия";
 
         const text = document.createElement("p");
-        text.textContent = story.text;
+        text.textContent = story.text || "";
 
-        const deleteButton = document.createElement("button");
-        deleteButton.className = "delete-button";
-        deleteButton.type = "button";
-        deleteButton.textContent = "Удалить историю";
-
-        deleteButton.addEventListener("click", () => {
-            if (!confirm("Точно удалить эту историю?")) return;
-
-            const previous = [...stories];
-            stories.splice(index, 1);
-
-            if (!saveStories()) {
-                stories = previous;
-                return;
-            }
-            renderStories();
-        });
-
-        card.append(number, title, text, deleteButton);
+        card.append(number, title, text);
         storiesContainer.appendChild(card);
     });
 }
 
+let stories = [];
+
+async function refreshStories() {
+    storiesContainer.textContent = "Загружаем истории...";
+
+    try {
+        stories = await loadApproved("stories");
+        renderStories();
+    } catch (error) {
+        console.error("Ошибка загрузки историй:", error);
+        storiesContainer.textContent = "Не удалось загрузить истории. Обновите страницу позже.";
+    }
+}
+
+// ---------- ОТОБРАЖЕНИЕ МЕМОВ ----------
+
+let memes = [];
+
+function renderMemes() {
+    container.innerHTML = "";
+
+    if (memes.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "empty-memes";
+        emptyMessage.textContent = "Пока одобренных мемов нет. Добавьте первый!";
+        container.appendChild(emptyMessage);
+        return;
+    }
+
+    memes.forEach((meme, index) => {
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const number = document.createElement("span");
+        number.textContent = "😂 МЕМ № " + String(index + 1).padStart(3, "0");
+
+        const title = document.createElement("h3");
+        title.textContent = meme.title || "Без названия";
+
+        const description = document.createElement("p");
+        description.textContent = meme.text || "";
+
+        card.append(number, title, description);
+
+        if (meme.image) {
+            const img = document.createElement("img");
+            img.src = meme.image;
+            img.alt = meme.title || "Изображение мема";
+            img.loading = "lazy";
+
+            img.onerror = () => {
+                img.alt = "Не удалось загрузить изображение";
+                img.hidden = true;
+            };
+
+            card.appendChild(img);
+        }
+
+        container.appendChild(card);
+    });
+}
+
+async function refreshMemes() {
+    container.textContent = "Загружаем мемы...";
+
+    try {
+        memes = await loadApproved("memes");
+        renderMemes();
+    } catch (error) {
+        console.error("Ошибка загрузки мемов:", error);
+        container.textContent = "Не удалось загрузить мемы. Обновите страницу позже.";
+    }
+}
+
+// ---------- TURNSTILE ----------
+
+window.onTurnstileLoad = function () {
+    if (!window.turnstile) return;
+
+    const memeElement = document.getElementById("memeTurnstile");
+    const storyElement = document.getElementById("storyTurnstile");
+
+    if (memeElement && memeTurnstileId === null) {
+        memeTurnstileId = turnstile.render(memeElement, {
+            sitekey: TURNSTILE_SITE_KEY,
+            callback: (token) => {
+                memeTurnstileToken = token;
+            },
+            "expired-callback": () => {
+                memeTurnstileToken = "";
+            },
+            "error-callback": () => {
+                memeTurnstileToken = "";
+            }
+        });
+    }
+
+    if (storyElement && storyTurnstileId === null) {
+        storyTurnstileId = turnstile.render(storyElement, {
+            sitekey: TURNSTILE_SITE_KEY,
+            callback: (token) => {
+                storyTurnstileToken = token;
+            },
+            "expired-callback": () => {
+                storyTurnstileToken = "";
+            },
+            "error-callback": () => {
+                storyTurnstileToken = "";
+            }
+        });
+    }
+};
+
+function resetCaptcha(type) {
+    if (!window.turnstile) return;
+
+    if (type === "memes" && memeTurnstileId !== null) {
+        memeTurnstileToken = "";
+        turnstile.reset(memeTurnstileId);
+    }
+
+    if (type === "stories" && storyTurnstileId !== null) {
+        storyTurnstileToken = "";
+        turnstile.reset(storyTurnstileId);
+    }
+}
+
+// ---------- ОТПРАВКА НА APPS SCRIPT ----------
+
+async function postPublication(payload) {
+    const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/plain;charset=UTF-8"
+        },
+        body: JSON.stringify(payload),
+        redirect: "follow"
+    });
+
+    const responseText = await response.text();
+
+    let result;
+
+    try {
+        result = JSON.parse(responseText);
+    } catch {
+        throw new Error("Сервер вернул неожиданный ответ");
+    }
+
+    if (!result.success) {
+        throw new Error(result.error || "Сервер не принял публикацию");
+    }
+
+    return result;
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const dataUrl = String(reader.result || "");
+            const commaIndex = dataUrl.indexOf(",");
+
+            if (commaIndex < 0) {
+                reject(new Error("Не удалось прочитать изображение"));
+                return;
+            }
+
+            resolve(dataUrl.slice(commaIndex + 1));
+        };
+
+        reader.onerror = () => {
+            reject(new Error("Ошибка чтения изображения"));
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+function setFormBusy(formElement, busy) {
+    const submitButton = formElement.querySelector('button[type="submit"]');
+
+    if (submitButton) {
+        submitButton.disabled = busy;
+    }
+}
+
+// ---------- ФОРМА ИСТОРИЙ ----------
+
 showStoryForm.addEventListener("click", () => {
     storyForm.hidden = !storyForm.hidden;
+
     if (!storyForm.hidden) {
-        storyForm.scrollIntoView({ behavior: "smooth", block: "center" });
+        storyForm.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
     }
 });
 
-storyForm.addEventListener("submit", (event) => {
+storyForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const title = document.getElementById("storyTitle").value.trim();
     const text = document.getElementById("storyText").value.trim();
 
     if (!title || !text) {
-        alert("Заполни название и текст истории!");
+        setStatus("storyStatus", "Заполни название и текст истории.", true);
         return;
     }
 
-    stories.unshift({ title, text });
-
-    if (!saveStories()) {
-        stories.shift();
+    if (!storyTurnstileToken) {
+        setStatus("storyStatus", "Сначала пройди проверку Cloudflare.", true);
         return;
     }
 
-    renderStories();
-    storyForm.reset();
-    storyForm.hidden = true;
-    alert("История сохранена! 📖");
+    setFormBusy(storyForm, true);
+    setStatus("storyStatus", "Отправляем историю...");
+
+    try {
+        await postPublication({
+            type: "stories",
+            title,
+            text,
+            turnstileToken: storyTurnstileToken
+        });
+
+        storyForm.reset();
+        storyForm.hidden = true;
+
+        setStatus(
+            "storyStatus",
+            "История отправлена на модерацию. После одобрения она появится на сайте."
+        );
+
+    } catch (error) {
+        console.error("Ошибка отправки истории:", error);
+
+        setStatus(
+            "storyStatus",
+            "Не удалось подтвердить отправку: " + error.message +
+            ". Заявка могла попасть на сервер. Перед повторной отправкой проверь лист stories в Google Sheets.",
+            true
+        );
+
+    } finally {
+        setFormBusy(storyForm, false);
+        resetCaptcha("stories");
+    }
 });
 
 document.getElementById("cancelStoryForm").addEventListener("click", () => {
     storyForm.reset();
     storyForm.hidden = true;
+    setStatus("storyStatus", "");
+    resetCaptcha("stories");
 });
 
-// ПОКАЗ МЕМОВ
-
-function renderMemes() {
-    container.innerHTML = "";
-
-    memes.forEach((meme, index) => {
-
-        const card = document.createElement("article");
-        card.className = "card";
-
-        const number = document.createElement("span");
-        number.textContent =
-            "😂 МЕМ № " + String(index + 1).padStart(3, "0");
-
-        const title = document.createElement("h3");
-        title.textContent = meme.title;
-
-        const description = document.createElement("p");
-        description.textContent = meme.text;
-
-        card.append(number, title, description);
-
-        if (meme.image) {
-            const img = document.createElement("img");
-
-            img.src = meme.image;
-            img.alt = meme.title;
-
-            card.appendChild(img);
-        }
-
-        const deleteButton = document.createElement("button");
-
-        deleteButton.className = "delete-button";
-        deleteButton.textContent = "Удалить мем";
-
-        deleteButton.addEventListener("click", () => {
-
-            const confirmation = confirm(
-                "Точно удалить этот мем?"
-            );
-
-            if (!confirmation) return;
-
-            const previous = [...memes];
-
-            memes.splice(index, 1);
-
-            if (!saveMemes()) {
-                memes = previous;
-                return;
-            }
-
-            renderMemes();
-        });
-
-        card.appendChild(deleteButton);
-        container.appendChild(card);
-    });
-}
-
-// ОТКРЫТИЕ ФОРМЫ
+// ---------- ФОРМА МЕМОВ ----------
 
 showForm.addEventListener("click", () => {
-
     form.hidden = !form.hidden;
 
     if (!form.hidden) {
@@ -266,10 +392,9 @@ showForm.addEventListener("click", () => {
     }
 });
 
-// ПРЕДПРОСМОТР КАРТИНКИ
+// Предпросмотр картинки
 
 imageInput.addEventListener("change", () => {
-
     const file = imageInput.files[0];
 
     if (!file) {
@@ -278,158 +403,152 @@ imageInput.addEventListener("change", () => {
         return;
     }
 
-    if (!file.type.startsWith("image/")) {
-        alert("Выбери изображение!");
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+        alert("Выбери картинку в формате JPG, PNG или WEBP.");
         imageInput.value = "";
+        imagePreview.hidden = true;
+        imagePreview.removeAttribute("src");
         return;
     }
 
-    if (file.size > 1024 * 1024) {
-        alert("Картинка должна весить не больше 1 МБ.");
+    if (file.size > MAX_IMAGE_BYTES) {
+        alert("Картинка должна весить не больше 4 МБ.");
         imageInput.value = "";
+        imagePreview.hidden = true;
+        imagePreview.removeAttribute("src");
         return;
     }
 
     const reader = new FileReader();
 
-    reader.onload = () =>
-
-
-{
+    reader.onload = () => {
         imagePreview.src = reader.result;
         imagePreview.hidden = false;
+    };
+
+    reader.onerror = () => {
+        alert("Не удалось прочитать картинку.");
     };
 
     reader.readAsDataURL(file);
 });
 
-// ДОБАВЛЕНИЕ МЕМА
-
-form.addEventListener("submit", (event) => {
-
+form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const title = document
-        .getElementById("memeTitle")
-        .value.trim();
-
-    const text = document
-        .getElementById("memeText")
-        .value.trim();
-
+    const title = document.getElementById("memeTitle").value.trim();
+    const text = document.getElementById("memeText").value.trim();
     const file = imageInput.files[0];
 
     if (!title || !text) {
-        alert("Заполни название и описание!");
+        setStatus("memeStatus", "Заполни название и описание мема.", true);
         return;
     }
 
-    function addMeme(image = "") {
+    if (!memeTurnstileToken) {
+        setStatus("memeStatus", "Сначала пройди проверку Cloudflare.", true);
+        return;
+    }
 
-        const newMeme = {
-            title: title,
-            text: text,
-            image: image
+    setFormBusy(form, true);
+    setStatus("memeStatus", "Отправляем мем...");
+
+    try {
+        const payload = {
+            type: "memes",
+            title,
+            text,
+            turnstileToken: memeTurnstileToken
         };
 
-        memes.unshift(newMeme);
-
-        if (!saveMemes()) {
-            memes.shift();
-            return;
+        if (file) {
+            payload.imageBase64 = await fileToBase64(file);
+            payload.imageMimeType = file.type;
         }
 
-        renderMemes();
+        await postPublication(payload);
 
         form.reset();
         imagePreview.hidden = true;
         imagePreview.removeAttribute("src");
         form.hidden = true;
 
-        alert("Мем успешно добавлен! 😂");
-    }
+        setStatus(
+            "memeStatus",
+            "Мем отправлен на модерацию. После одобрения он появится на сайте."
+        );
 
-    if (file) {
+    } catch (error) {
+        console.error("Ошибка отправки мема:", error);
 
-        const reader = new FileReader();
+        setStatus(
+            "memeStatus",
+            "Не удалось подтвердить отправку: " + error.message +
+            ". Заявка могла попасть на сервер. Перед повторной отправкой проверь лист memes в Google Sheets.",
+            true
+        );
 
-        reader.onload = () => {
-            addMeme(reader.result);
-        };
-
-        reader.onerror = () => {
-            alert("Ошибка загрузки картинки.");
-        };
-
-        reader.readAsDataURL(file);
-
-    } else {
-
-        addMeme();
-
+    } finally {
+        setFormBusy(form, false);
+        resetCaptcha("memes");
     }
 });
 
-// ОТМЕНА
+document.getElementById("cancelForm").addEventListener("click", () => {
+    form.reset();
+    imagePreview.hidden = true;
+    imagePreview.removeAttribute("src");
+    form.hidden = true;
+    setStatus("memeStatus", "");
+    resetCaptcha("memes");
+});
 
-document.getElementById("cancelForm")
-    .addEventListener("click", () => {
+// ---------- СЛУЧАЙНЫЕ ЦИТАТЫ ----------
 
-        form.reset();
-        imagePreview.hidden = true;
-        imagePreview.removeAttribute("src");
-        form.hidden = true;
+document.getElementById("quoteButton").addEventListener("click", () => {
+    const randomIndex = Math.floor(Math.random() * quotes.length);
 
-    });
+    document.getElementById("randomQuote").textContent =
+        "«" + quotes[randomIndex] + "»";
+});
 
-// СЛУЧАЙНЫЕ ЦИТАТЫ
+// ---------- СЕКРЕТНАЯ КОМНАТА ----------
 
-document.getElementById("quoteButton")
-    .addEventListener("click", () => {
+document.getElementById("secretBtn").addEventListener("click", () => {
+    const password = prompt("Введи секретное слово:");
 
-        const randomIndex = Math.floor(
-            Math.random() * quotes.length
-        );
+    if (password === null) return;
 
-        document.getElementById("randomQuote").textContent =
-            "«" + quotes[randomIndex] + "»";
+    if (
+        password.trim().toLocaleLowerCase("ru-RU") ===
+        "царь проснулся".toLocaleLowerCase("ru-RU")
+    ) {
+        const secret = document.getElementById("secretSection");
 
-    });
+        secret.hidden = false;
+        secret.classList.remove("secret-open");
+        void secret.offsetWidth;
+        secret.classList.add("secret-open");
 
-// СЕКРЕТНАЯ КОМНАТА 👑
+        secret.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
 
-document.getElementById("secretBtn")
-    .addEventListener("click", () => {
+    } else {
+        alert("Неверное слово! 🤫");
+    }
+});
 
-        const password = prompt("Введи секретное слово:");
+// ---------- ЗАПУСК ----------
 
-        if (password === null) return;
-
-        if (password.trim().toLocaleLowerCase("ru-RU") ===
-            "царь проснулся".toLocaleLowerCase("ru-RU")) {
-
-            const secret = document.getElementById("secretSection");
-
-            secret.hidden = false;
-
-            // Перезапускаем анимацию, даже если комнату открывали раньше
-            secret.classList.remove("secret-open");
-            void secret.offsetWidth;
-            secret.classList.add("secret-open");
-
-            secret.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-        } else {
-            alert("Неверное слово! 🤫");
-        }
-    });
-
-// ЗАПУСК САЙТА
-
-renderMemes();
-renderStories();
+refreshMemes();
+refreshStories();
 
 console.log("МОСКОВСКИЕ ЧИКСЫ ЗАПУЩЕНЫ!");
