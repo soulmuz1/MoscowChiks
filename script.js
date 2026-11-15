@@ -1,4 +1,3 @@
-
 // МОСКОВСКИЕ ЧИКСЫ — JAVASCRIPT
 // Публичные публикации загружаются из Google Sheets.
 // Новые публикации отправляются на сервер со статусом pending.
@@ -38,6 +37,7 @@ let storyTurnstileToken = "";
 function setStatus(id, message, isError = false) {
     const element = document.getElementById(id);
     if (!element) return;
+
     element.textContent = message;
     element.classList.toggle("form-error", isError);
 }
@@ -138,6 +138,19 @@ async function refreshStories() {
 
 let memes = [];
 
+function getDriveImageUrl(url) {
+    if (!url) return "";
+
+    const match = String(url).match(/[?&]id=([^&]+)/) ||
+        String(url).match(/\/d\/([^/]+)/);
+
+    if (!match) return url;
+
+    const imageId = match[1];
+
+    return `https://drive.google.com/thumbnail?id=${encodeURIComponent(imageId)}&sz=w1200`;
+}
+
 function renderMemes() {
     container.innerHTML = "";
 
@@ -166,11 +179,13 @@ function renderMemes() {
 
         if (meme.image) {
             const img = document.createElement("img");
-            img.src = meme.image;
+
+            img.src = getDriveImageUrl(meme.image);
             img.alt = meme.title || "Изображение мема";
             img.loading = "lazy";
 
             img.onerror = () => {
+                console.error("Не удалось загрузить картинку:", meme.image);
                 img.alt = "Не удалось загрузить изображение";
                 img.hidden = true;
             };
